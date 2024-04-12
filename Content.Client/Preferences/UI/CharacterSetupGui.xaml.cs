@@ -6,7 +6,6 @@ using Content.Client.Info.PlaytimeStats;
 using Content.Client.Lobby.UI;
 using Content.Client.Resources;
 using Content.Client.Stylesheets;
-using Content.Corvax.Interfaces.Client;
 using Content.Shared.Humanoid;
 using Content.Shared.Humanoid.Prototypes;
 using Content.Shared.Preferences;
@@ -80,13 +79,6 @@ namespace Content.Client.Preferences.UI
 
             StatsButton.OnPressed += _ => new PlaytimeStatsWindow().OpenCentered();
             preferencesManager.OnServerDataLoaded += UpdateUI;
-            // Corvax-Sponsors-Start
-            if (IoCManager.Instance!.TryResolveType<ISponsorWindowCreator>(out var creator))
-            {
-                SponsorButton.Visible = true;
-                SponsorButton.OnPressed += _ => creator.OpenWindow();
-            }
-            // Corvax-Sponsors-End
         }
 
         protected override void Dispose(bool disposing)
