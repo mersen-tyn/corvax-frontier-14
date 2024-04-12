@@ -381,21 +381,13 @@ namespace Content.Shared.Preferences
             return Appearance.MemberwiseEquals(other.Appearance);
         }
 
-        public void EnsureValid(IConfigurationManager configManager, IPrototypeManager prototypeManager, string[] sponsorPrototypes)
+        public void EnsureValid(IConfigurationManager configManager, IPrototypeManager prototypeManager)
         {
             if (!prototypeManager.TryIndex<SpeciesPrototype>(Species, out var speciesPrototype) || speciesPrototype.RoundStart == false)
             {
                 Species = SharedHumanoidAppearanceSystem.DefaultSpecies;
                 speciesPrototype = prototypeManager.Index<SpeciesPrototype>(Species);
             }
-
-            // Corvax-Sponsors-Start: Reset to human if player not sponsor
-            if (speciesPrototype.SponsorOnly && !sponsorPrototypes.Contains(Species))
-            {
-                Species = SharedHumanoidAppearanceSystem.DefaultSpecies;
-                speciesPrototype = prototypeManager.Index<SpeciesPrototype>(Species);
-            }
-            // Corvax-Sponsors-End
 
             var sex = Sex switch
             {
@@ -471,7 +463,7 @@ namespace Content.Shared.Preferences
                 bankBalance = 0;
             }
 
-            var appearance = HumanoidCharacterAppearance.EnsureValid(Appearance, Species, Sex, sponsorPrototypes);
+            var appearance = HumanoidCharacterAppearance.EnsureValid(Appearance, Species, Sex);
 
             var prefsUnavailableMode = PreferenceUnavailable switch
             {
@@ -549,10 +541,10 @@ namespace Content.Shared.Preferences
             _traitPreferences.AddRange(traits);
         }
 
-        public ICharacterProfile Validated(IConfigurationManager configManager, IPrototypeManager prototypeManager, string[] sponsorPrototypes)
+        public ICharacterProfile Validated(IConfigurationManager configManager, IPrototypeManager prototypeManager)
         {
             var profile = new HumanoidCharacterProfile(this);
-            profile.EnsureValid(configManager, prototypeManager, sponsorPrototypes); // Corvax-Sponsors
+            profile.EnsureValid(configManager, prototypeManager);
             return profile;
         }
 
