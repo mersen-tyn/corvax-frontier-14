@@ -287,7 +287,7 @@ public sealed partial class ShuttleSystem
                             Enable(uid, component: body, shuttle: shuttle);
                         _physics.SetLinearVelocity(uid, new Vector2(0f, 20f), body: body);
                         _physics.SetAngularVelocity(uid, 0f, body: body);
-                        _physics.SetLinearDamping(uid, body, 0f)
+                        _physics.SetLinearDamping(uid, body, 0f);
                         _physics.SetAngularDamping(uid, body, 0f);
                     }
 
