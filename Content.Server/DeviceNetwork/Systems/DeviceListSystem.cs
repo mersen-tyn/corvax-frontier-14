@@ -8,6 +8,8 @@ using Content.Shared.Interaction;
 using JetBrains.Annotations;
 using Robust.Shared.Map.Events;
 using Robust.Shared.GameObjects;
+using Robust.Shared.GameStates;
+using Robust.Shared.Timing;
 using Robust.Shared.Serialization.Manager.Attributes;
 using Robust.Shared.IoC;
 
@@ -26,7 +28,7 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         SubscribeLocalEvent<DeviceListComponent, BeforeBroadcastAttemptEvent>(OnBeforeBroadcast);
         SubscribeLocalEvent<DeviceListComponent, BeforePacketSentEvent>(OnBeforePacketSent);
         SubscribeLocalEvent<BeforeSaveEvent>(OnMapSave);
-        SubscribeLocalEvent<RoundEndTextEvent>(OnRoundEnd);
+        SubscribeLocalEvent<PostUpdateEvent>(OnPostUpdate);
         SubscribeLocalEvent<GenericEvent>(OnDeviceListProcessed);
     }
 
@@ -108,7 +110,7 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         }
     }
 
-    private void OnRoundEnd(RoundEndTextEvent ev)
+    private void OnPostUpdate(PostUpdateEvent ev)
     {
         RaiseLocalEvent(new GenericEvent(DeviceListProcessedEvent));
     }
