@@ -28,11 +28,11 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
     private void OnEntityDeleted(Entity<MetaDataComponent> entity)
     {
         var uid = entity.Owner;
-        var query = GetEntityQuery<DeviceListComponent>();
+        var deviceLists = GetEntityQuery<DeviceListComponent>().ToList();  // Assuming ToList() or similar method is available
+
         var devicesToRemove = new List<DeviceListComponent>();
 
-        var enumerator = query.EnumerateEntities().GetEnumerator(); // Use EnumerateEntities() to get the enumerator
-        while (enumerator.MoveNext(out var deviceListEntity, out var deviceList))
+        foreach (var deviceList in deviceLists)
         {
             if (deviceList.Devices.Contains(uid))
             {
@@ -43,7 +43,7 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         foreach (var deviceList in devicesToRemove)
         {
             deviceList.Devices.Remove(uid);
-           var queryDeviceNetwork = GetEntityQuery<DeviceNetworkComponent>();
+            var queryDeviceNetwork = GetEntityQuery<DeviceNetworkComponent>();
             if (queryDeviceNetwork.TryGetComponent(uid, out var deviceNetwork))
                 deviceNetwork.DeviceLists.Remove(deviceList.Owner);
             Dirty(deviceList.Owner, deviceList);
