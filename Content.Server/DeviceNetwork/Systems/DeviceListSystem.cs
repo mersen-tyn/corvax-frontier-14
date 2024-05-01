@@ -69,7 +69,6 @@ namespace Content.Server.DeviceNetwork.Systems
                 return new Dictionary<string, EntityUid>();
 
             var devices = new Dictionary<string, EntityUid>(deviceList.Devices.Count);
-
             foreach (var deviceUid in deviceList.Devices)
             {
                 if (!TryComp<DeviceNetworkComponent>(deviceUid, out DeviceNetworkComponent? deviceNet))
@@ -78,10 +77,8 @@ namespace Content.Server.DeviceNetwork.Systems
                 var address = MetaData(deviceUid).EntityLifeStage == EntityLifeStage.MapInitialized
                     ? deviceNet.Address
                     : $"UID: {deviceUid.ToString()}";
-
                 devices.Add(address, deviceUid);
             }
-
             return devices;
         }
 
@@ -101,13 +98,11 @@ namespace Content.Server.DeviceNetwork.Systems
             }
 
             HashSet<DeviceNetworkComponent> filteredRecipients = new(args.Recipients.Count);
-
             foreach (var recipient in args.Recipients)
             {
                 if (component.Devices.Contains(recipient.Owner) == component.IsAllowList)
                     filteredRecipients.Add(recipient);
             }
-
             args.ModifiedRecipients = filteredRecipients;
         }
 
@@ -150,6 +145,10 @@ namespace Content.Server.DeviceNetwork.Systems
                 Dirty(uid, device);
                 toRemove.Clear();
             }
+        }
+    }
+}
+
 
     /// <summary>
     ///     Updates the device list stored on this entity.
