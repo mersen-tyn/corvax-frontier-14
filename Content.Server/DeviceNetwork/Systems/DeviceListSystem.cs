@@ -23,7 +23,8 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         SubscribeLocalEvent<DeviceListComponent, BeforeBroadcastAttemptEvent>(OnBeforeBroadcast);
         SubscribeLocalEvent<DeviceListComponent, BeforePacketSentEvent>(OnBeforePacketSent);
         SubscribeLocalEvent<BeforeSaveEvent>(OnMapSave);
-        SubscribeLocalEvent<EntDeletedEvent>(OnEntDeleted); // Added event subscription
+        // Subscribe to EntityTerminatingEvent
+        SubscribeLocalEvent<EntityTerminatingEvent>(OnEntityTerminating);
     }
 
     private void OnShutdown(EntityUid uid, DeviceListComponent component, ComponentShutdown args)
@@ -239,4 +240,15 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
 
         return DeviceListUpdateResult.UpdateOk;
     }
+    private void OnEntityTerminating(ref EntityTerminatingEvent ev)
+    {
+        var query = GetEntityQuery<DeviceListComponent>();
+        foreach (var comp in query.EntityQuery(includePaused: true))
+        {
+            if (comp.Devices.Remove(ev.EntityUid))
+            {
+                Dirty(comp.Owner, comp);
+            }
+        }
+    } 
 }
