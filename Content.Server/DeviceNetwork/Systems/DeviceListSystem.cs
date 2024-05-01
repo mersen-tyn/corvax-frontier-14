@@ -25,8 +25,9 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         EntityManager.EntityDeleted += OnEntityDeleted; // Добавляем обработчик события EntityDeleted
     }
     
-        private void OnEntityDeleted(EntityUid uid)
+        private void OnEntityDeleted(Entity<MetaDataComponent> entity)
     {
+        var uid = entity.Uid; // Получаем EntityUid из объекта entity
         var query = GetEntityQuery<DeviceListComponent>();
         var devicesToRemove = query.Where(c => c.Devices.Contains(uid)).ToList();
 
