@@ -29,9 +29,17 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
     {
         var uid = entity.Owner;
         var query = GetEntityQuery<DeviceListComponent>();
-        var devicesToRemove = query.Where(c => c.Devices.Contains(uid)).ToList();
+        var devicesToRemove = new List<DeviceListComponent>(); 
 
-        foreach (var deviceList in devicesToRemove)
+        foreach (var deviceList in query) // Перебираем все компоненты DeviceListComponent
+        {
+            if (deviceList.Devices.Contains(uid)) 
+            {
+                devicesToRemove.Add(deviceList); // Добавляем компонент в список, если он содержит удаленную сущность
+            }
+        }
+
+        foreach (var deviceList in devicesToRemove) // Удаляем сущность из списков устройств
         {
             deviceList.Devices.Remove(uid);
             var queryDeviceNetwork = GetEntityQuery<DeviceNetworkComponent>();
