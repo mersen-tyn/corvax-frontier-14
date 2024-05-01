@@ -29,13 +29,14 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
     {
         var uid = entity.Owner;
         var query = GetEntityQuery<DeviceListComponent>();
-        var devicesToRemove = new List<DeviceListComponent>(); 
+        var devicesToRemove = new List<DeviceListComponent>();
 
-        foreach (var deviceList in query) // Перебираем все компоненты DeviceListComponent
+        var enumerator = query.GetEnumerator(); // Создаем перечислитель
+        while (enumerator.MoveNext(out var deviceList)) // Перебираем элементы запроса
         {
-            if (deviceList.Devices.Contains(uid)) 
+            if (deviceList.Devices.Contains(uid))
             {
-                devicesToRemove.Add(deviceList); // Добавляем компонент в список, если он содержит удаленную сущность
+                devicesToRemove.Add(deviceList);
             }
         }
 
