@@ -10,10 +10,10 @@ using Robust.Shared.Map.Events;
 
 namespace Content.Server.DeviceNetwork.Systems;
 
-[UsedImplicitly]
 public sealed class DeviceListSystem : SharedDeviceListSystem
 {
     [Dependency] private readonly NetworkConfiguratorSystem _configurator = default!;
+    [Dependency] private readonly IEntitySystemManager _systemManager = default!;
 
     public override void Initialize()
     {
@@ -22,48 +22,26 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         SubscribeLocalEvent<DeviceListComponent, BeforeBroadcastAttemptEvent>(OnBeforeBroadcast);
         SubscribeLocalEvent<DeviceListComponent, BeforePacketSentEvent>(OnBeforePacketSent);
         SubscribeLocalEvent<BeforeSaveEvent>(OnMapSave);
-        EntityManager.EntityDeleted += OnEntityDeleted; // Добавляем обработчик события EntityDeleted
+        SubscribeLocalEvent<EntityDeletedEvent>(OnEntityDeleted);
     }
-    
-    private void OnEntityDeleted(EntityDeletedEvent ev) // Use EntityDeletedEvent
-    {
-        var uid = ev.EntityUid; // Access deleted entity's Uid directly
-        var query = GetEntityQuery<DeviceListComponent>();
-        var metaQuery = GetEntityQuery<MetaDataComponent>();
-        var devicesToRemove = new List<DeviceListComponent>();
 
-        var components = new Dictionary<EntityUid, IComponent>();
-        foreach (var entityUid in query.EntityUIDs)
+    private void OnEntityDeleted(EntityDeletedEvent ev)
+    {
+        var query = GetEntityQuery<DeviceListComponent>();
+        foreach (var comp in query)
         {
-            if (query.TryGetComponent(entityUid, out var deviceList))
+            if (comp.Devices.Remove(ev.EntityUid))
             {
-                components[entityUid] = deviceList;
-                if (deviceList.Devices.Contains(uid))
+                Dirty(comp.Owner, comp);
+                // Если компонент DeviceNetworkComponent существует, удаляем список устройств
+                if (TryComp<DeviceNetworkComponent>(ev.EntityUid, out var deviceComp))
                 {
-                    devicesToRemove.Add(deviceList);
+                    deviceComp.DeviceLists.Remove(comp.Owner);
                 }
             }
         }
-
-        var enumerator = new EntityQueryEnumerator<DeviceListComponent>(components, metaQuery);
-        while (enumerator.MoveNext(out var deviceListEntity, out var deviceList))
-        {
-            if (deviceList.Devices.Contains(uid))
-            {
-                devicesToRemove.Add(deviceList);
-            }
-        }
-
-        foreach (var deviceList in devicesToRemove)
-        {
-            deviceList.Devices.Remove(uid);
-            var queryDeviceNetwork = GetEntityQuery<DeviceNetworkComponent>();
-            if (queryDeviceNetwork.TryGetComponent(uid, out var deviceNetwork))
-                deviceNetwork.DeviceLists.Remove(deviceList.Owner);
-            Dirty(deviceList.Owner, deviceList);
-        }
     }
-    
+
     private void OnShutdown(EntityUid uid, DeviceListComponent component, ComponentShutdown args)
     {
         foreach (var conf in component.Configurators)
