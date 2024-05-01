@@ -244,3 +244,4 @@ namespace Content.Server.DeviceNetwork.Systems
         return DeviceListUpdateResult.UpdateOk;
     }
 }
+}
