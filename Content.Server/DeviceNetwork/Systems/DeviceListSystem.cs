@@ -31,12 +31,12 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         var query = GetEntityQuery<DeviceListComponent>();
         var devicesToRemove = new List<DeviceListComponent>();
 
-        var enumerator = query.GetEnumerator(); // Use GetEnumerator() directly
-        while (enumerator.MoveNext(out var comp, out var deviceList))
+        var enumerator = query.GetEnumerableComponent().GetEnumerator();
+        while (enumerator.MoveNext(out var component))
         {
-            if (deviceList.Devices.Contains(uid))
+            if (component.Devices.Contains(uid))
             {
-                devicesToRemove.Add(deviceList);
+                devicesToRemove.Add(component);
             }
         }
 
