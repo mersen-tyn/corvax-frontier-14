@@ -31,8 +31,8 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         var query = GetEntityQuery<DeviceListComponent>();
         var devicesToRemove = new List<DeviceListComponent>();
 
-        var enumerator = query.GetEnumerator(); // Создаем перечислитель
-        while (enumerator.MoveNext(out var deviceList)) // Перебираем элементы запроса
+        var enumerator = query.EnumerateEntities().GetEnumerator(); // Use EnumerateEntities() to get the enumerator
+        while (enumerator.MoveNext(out var deviceListEntity, out var deviceList))
         {
             if (deviceList.Devices.Contains(uid))
             {
@@ -40,10 +40,10 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
             }
         }
 
-        foreach (var deviceList in devicesToRemove) // Удаляем сущность из списков устройств
+        foreach (var deviceList in devicesToRemove)
         {
             deviceList.Devices.Remove(uid);
-            var queryDeviceNetwork = GetEntityQuery<DeviceNetworkComponent>();
+           var queryDeviceNetwork = GetEntityQuery<DeviceNetworkComponent>();
             if (queryDeviceNetwork.TryGetComponent(uid, out var deviceNetwork))
                 deviceNetwork.DeviceLists.Remove(deviceList.Owner);
             Dirty(deviceList.Owner, deviceList);
