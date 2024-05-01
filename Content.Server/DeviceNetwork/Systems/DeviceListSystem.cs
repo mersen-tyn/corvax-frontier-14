@@ -32,7 +32,7 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         var metaQuery = GetEntityQuery<MetaDataComponent>();
         var devicesToRemove = new List<DeviceListComponent>();
 
-        var queryDict = new Dictionary<EntityUid, DeviceListComponent>();
+        var queryDict = new Dictionary<EntityUid, IComponent>();
         var enumerator = new EntityQueryEnumerator<DeviceListComponent>(query, metaQuery);
         while (enumerator.MoveNext(out var entityUid, out var deviceList))
         {
