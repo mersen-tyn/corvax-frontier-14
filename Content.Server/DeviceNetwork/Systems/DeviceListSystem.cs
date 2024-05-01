@@ -171,24 +171,6 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
     }
 
     /// <summary>
-    /// Added event handler to remove deleted entities from device lists
-    /// </summary>
-    private void OnEntDeleted(EntDeletedEvent ev)
-    {
-        var query = GetEntityQuery<DeviceListComponent>();
-
-        foreach (var (deviceList, _) in query.EntityQuery<DeviceListComponent, TransformComponent>())
-        {
-            if (!deviceList.Devices.Remove(ev.Entity))
-                continue;
-
-            // Optional: If desired, raise an event to notify other systems about the removal
-            RaiseLocalEvent(deviceList.Owner, new DeviceListUpdateEvent(deviceList.Devices.ToList(), deviceList.Devices.ToList()));
-            Dirty(deviceList.Owner, deviceList);
-        }
-    }
-
-    /// <summary>
     ///     Updates the device list stored on this entity.
     /// </summary>
     /// <param name="uid">The entity to update.</param>
@@ -240,6 +222,10 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
 
         return DeviceListUpdateResult.UpdateOk;
     }
+
+    /// <summary>
+    ///  Corrected event handler to remove deleted entities from device lists
+    /// </summary>
     private void OnEntityTerminating(ref EntityTerminatingEvent ev)
     {
         var query = GetEntityQuery<DeviceListComponent>();
