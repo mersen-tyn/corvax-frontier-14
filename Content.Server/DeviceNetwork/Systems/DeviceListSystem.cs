@@ -5,6 +5,7 @@ using Content.Shared.DeviceNetwork.Components;
 using Content.Shared.DeviceNetwork.Systems;
 using Content.Shared.Interaction;
 using JetBrains.Annotations;
+using Robust.Shared.GameObjects;
 using Robust.Shared.Map.Events;
 
 namespace Content.Server.DeviceNetwork.Systems;
@@ -21,8 +22,24 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         SubscribeLocalEvent<DeviceListComponent, BeforeBroadcastAttemptEvent>(OnBeforeBroadcast);
         SubscribeLocalEvent<DeviceListComponent, BeforePacketSentEvent>(OnBeforePacketSent);
         SubscribeLocalEvent<BeforeSaveEvent>(OnMapSave);
+        EntityManager.EntityDeleted += OnEntityDeleted; // Добавляем обработчик события EntityDeleted
     }
+    
+        private void OnEntityDeleted(EntityUid uid)
+    {
+        var query = GetEntityQuery<DeviceListComponent>();
+        var devicesToRemove = query.Where(c => c.Devices.Contains(uid)).ToList();
 
+        foreach (var deviceList in devicesToRemove)
+        {
+            deviceList.Devices.Remove(uid);
+            var queryDeviceNetwork = GetEntityQuery<DeviceNetworkComponent>();
+            if (queryDeviceNetwork.TryGetComponent(uid, out var deviceNetwork))
+                deviceNetwork.DeviceLists.Remove(deviceList.Owner);
+            Dirty(deviceList.Owner, deviceList);
+        }
+    }
+    
     private void OnShutdown(EntityUid uid, DeviceListComponent component, ComponentShutdown args)
     {
         foreach (var conf in component.Configurators)
