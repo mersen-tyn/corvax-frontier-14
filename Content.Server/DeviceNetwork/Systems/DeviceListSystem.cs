@@ -1,11 +1,12 @@
-using System.Linq;
+using System.Collections.Generic;
 using Content.Server.DeviceNetwork.Components;
 using Content.Shared.DeviceNetwork;
 using Content.Shared.DeviceNetwork.Components;
 using Content.Shared.DeviceNetwork.Systems;
-using Content.Shared.Interaction;
-using JetBrains.Annotations;
 using Robust.Shared.Map.Events;
+using Robust.Shared.GameObjects;
+using Robust.Shared.Serialization.Manager.Attributes;
+using Robust.Shared.IoC;
 
 namespace Content.Server.DeviceNetwork.Systems;
 
@@ -42,9 +43,71 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         component.Devices.Clear();
     }
 
-    private void OnGetState(EntityUid uid, DeviceListComponent component, ref ComponentGetState args)
+    private void OnBeforeBroadcast(EntityUid uid, DeviceListComponent component, BeforeBroadcastAttemptEvent args)
     {
-        _processingData.Add(new DeviceListProcessingData(uid, component, args));
+        if (component.Devices.Count == 0)
+        {
+            if (component.IsAllowList)
+                args.Cancel();
+            return;
+        }
+
+        HashSet<DeviceNetworkComponent> filteredRecipients = new(args.Recipients.Count);
+        foreach (var recipient in args.Recipients)
+        {
+            if (component.Devices.Contains(recipient.Owner) == component.IsAllowList)
+                filteredRecipients.Add(recipient);
+        }
+
+        args.ModifiedRecipients = filteredRecipients;
+    }
+
+    private void OnBeforePacketSent(EntityUid uid, DeviceListComponent component, BeforePacketSentEvent args)
+    {
+        if (component.HandleIncomingPackets && component.Devices.Contains(args.Sender) != component.IsAllowList)
+            args.Cancel();
+    }
+
+    private void OnMapSave(BeforeSaveEvent ev)
+    {
+        List<EntityUid> toRemove = new();
+        var query = GetEntityQuery<TransformComponent>();
+        var enumerator = AllEntityQuery<DeviceListComponent, TransformComponent>();
+        while (enumerator.MoveNext(out var uid, out var device, out var xform))
+        {
+            if (xform.MapUid != ev.Map)
+                continue;
+
+            foreach (var ent in device.Devices)
+            {
+                if (!query.TryGetComponent(ent, out var linkedXform))
+                {
+                    toRemove.Add(ent);
+                    continue;
+                }
+
+                if (linkedXform.MapUid == ev.Map)
+                    continue;
+
+                toRemove.Add(ent);
+                Log.Error(
+                    $"Saving a device list ({ToPrettyString(uid)}) that has a reference to an entity on another map ({ToPrettyString(ent)}). Removing entity from list.");
+            }
+
+            if (toRemove.Count == 0)
+                continue;
+
+            var old = device.Devices.ToList();
+            device.Devices.ExceptWith(toRemove);
+            RaiseLocalEvent(uid, new DeviceListUpdateEvent(old, device.Devices.ToList()));
+            Dirty(uid, device);
+            toRemove.Clear();
+        }
+    }
+
+    private void OnRoundEnd(RoundEndTextEvent ev)
+    {
+        RaiseLocalEvent(new GenericEvent(DeviceListProcessedEvent));
     }
 
     private void OnDeviceListProcessed(GenericEvent ev)
@@ -67,13 +130,6 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         }
 
         _processingData.Clear();
-    }
-
-    private const string DeviceListProcessedEvent = "DeviceListProcessed";
-
-    private void OnRoundEnd(RoundEndTextEvent ev)
-    {
-        RaiseLocalEvent(new GenericEvent(DeviceListProcessedEvent));
     }
 
     public sealed class DeviceListProcessingData
