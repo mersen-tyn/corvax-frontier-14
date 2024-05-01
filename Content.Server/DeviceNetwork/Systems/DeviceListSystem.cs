@@ -229,9 +229,9 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
     private void OnEntityTerminating(ref EntityTerminatingEvent ev)
     {
         var query = GetEntityQuery<DeviceListComponent>();
-        foreach (var comp in query.EntityQuery(includePaused: true))
+        foreach (var comp in query) // Iterate through each DeviceListComponent
         {
-            if (comp.Devices.Remove(ev.EntityUid))
+            if (comp.Devices.Remove(ev.EntityUid)) // Check and remove the terminating entity
             {
                 Dirty(comp.Owner, comp);
             }
