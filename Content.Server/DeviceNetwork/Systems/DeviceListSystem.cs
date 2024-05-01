@@ -8,55 +8,61 @@ using JetBrains.Annotations;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Map.Events;
 
-namespace Content.Server.DeviceNetwork.Systems;
-
-public sealed class DeviceListSystem : SharedDeviceListSystem
+namespace Content.Server.DeviceNetwork.Systems
 {
-    [Dependency] private readonly NetworkConfiguratorSystem _configurator = default!;
-    [Dependency] private readonly IEntitySystemManager _systemManager = default!;
-
-    public override void Initialize()
+    public sealed class DeviceListSystem : SharedDeviceListSystem
     {
-        base.Initialize();
-        SubscribeLocalEvent<DeviceListComponent, ComponentShutdown>(OnShutdown);
-        SubscribeLocalEvent<DeviceListComponent, BeforeBroadcastAttemptEvent>(OnBeforeBroadcast);
-        SubscribeLocalEvent<DeviceListComponent, BeforePacketSentEvent>(OnBeforePacketSent);
-        SubscribeLocalEvent<BeforeSaveEvent>(OnMapSave);
-        SubscribeLocalEvent<EntityDeletedEvent>(OnEntityDeleted);
-    }
+        [Dependency] private readonly NetworkConfiguratorSystem _configurator = default!;
+        [Dependency] private readonly IEntityManager _entityManager = default!;
 
-    private void OnEntityDeleted(EntityDeletedEvent ev)
-    {
-        var query = GetEntityQuery<DeviceListComponent>();
-        foreach (var comp in query)
+        public override void Initialize()
         {
-            if (comp.Devices.Remove(ev.EntityUid))
+            base.Initialize();
+            SubscribeLocalEvent<DeviceListComponent, ComponentShutdown>(OnShutdown);
+            SubscribeLocalEvent<DeviceListComponent, BeforeBroadcastAttemptEvent>(OnBeforeBroadcast);
+            SubscribeLocalEvent<DeviceListComponent, BeforePacketSentEvent>(OnBeforePacketSent);
+            SubscribeLocalEvent<BeforeSaveEvent>(OnMapSave);
+            _entityManager.EntityDeleted += OnEntityDeleted;
+        }
+
+        private void OnEntityDeleted(EntityUid uid)
+        {
+            var query = GetEntityQuery<DeviceListComponent>();
+            foreach (var comp in query)
             {
-                Dirty(comp.Owner, comp);
-                // Если компонент DeviceNetworkComponent существует, удаляем список устройств
-                if (TryComp<DeviceNetworkComponent>(ev.EntityUid, out var deviceComp))
+                if (comp.Devices.Remove(uid))
                 {
-                    deviceComp.DeviceLists.Remove(comp.Owner);
+                    Dirty(comp.Owner, comp);
+                    // If the DeviceNetworkComponent exists, remove the device list
+                    if (TryComp<DeviceNetworkComponent>(uid, out var deviceComp))
+                    {
+                        deviceComp.DeviceLists.Remove(comp.Owner);
+                    }
                 }
             }
         }
-    }
 
-    private void OnShutdown(EntityUid uid, DeviceListComponent component, ComponentShutdown args)
-    {
-        foreach (var conf in component.Configurators)
+        protected override void Shutdown()
         {
-            _configurator.OnDeviceListShutdown(conf, (uid, component));
+            base.Shutdown();
+            _entityManager.EntityDeleted -= OnEntityDeleted;
         }
 
-        var query = GetEntityQuery<DeviceNetworkComponent>();
-        foreach (var device in component.Devices)
+        private void OnShutdown(EntityUid uid, DeviceListComponent component, ComponentShutdown args)
         {
-            if (query.TryGetComponent(device, out var comp))
-                comp.DeviceLists.Remove(uid);
+            foreach (var conf in component.Configurators)
+            {
+                _configurator.OnDeviceListShutdown(conf, (uid, component));
+            }
+
+            var query = GetEntityQuery<DeviceNetworkComponent>();
+            foreach (var device in component.Devices)
+            {
+                if (query.TryGetComponent(device, out var comp))
+                    comp.DeviceLists.Remove(uid);
+            }
+            component.Devices.Clear();
         }
-        component.Devices.Clear();
-    }
 
     /// <summary>
     /// Gets the given device list as a dictionary
