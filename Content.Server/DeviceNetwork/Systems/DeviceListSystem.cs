@@ -33,13 +33,18 @@ public sealed class DeviceListSystem : SharedDeviceListSystem
         var devicesToRemove = new List<DeviceListComponent>();
 
         var components = new Dictionary<EntityUid, IComponent>();
-        foreach (var (entity, deviceList) in query.GetEntities())
+        var enumerator = query.EnumerateEntities().GetEnumerator();
+        while (enumerator.MoveNext(out var entityUid, out var deviceList))
         {
-            components[entity] = deviceList;
+            components[entityUid] = deviceList;
+            if (deviceList.Devices.Contains(uid))
+            {
+                devicesToRemove.Add(deviceList);
+            }
         }
 
-        var enumerator = new EntityQueryEnumerator<DeviceListComponent>(components, metaQuery);
-        while (enumerator.MoveNext(out var deviceListEntity, out var deviceList))
+        var enumerator2 = new EntityQueryEnumerator<DeviceListComponent>(components, metaQuery);
+        while (enumerator2.MoveNext(out var deviceListEntity, out var deviceList))
         {
             if (deviceList.Devices.Contains(uid))
             {
