@@ -146,60 +146,58 @@ namespace Content.Server.DeviceNetwork.Systems
                 toRemove.Clear();
             }
         }
-    }
-}
 
-
-    /// <summary>
-    ///     Updates the device list stored on this entity.
-    /// </summary>
-    /// <param name="uid">The entity to update.</param>
-    /// <param name="devices">The devices to store.</param>
-    /// <param name="merge">Whether to merge or replace the devices stored.</param>
-    /// <param name="deviceList">Device list component</param>
-    public DeviceListUpdateResult UpdateDeviceList(EntityUid uid, IEnumerable<EntityUid> devices, bool merge = false, DeviceListComponent? deviceList = null)
-    {
-        if (!Resolve(uid, ref deviceList))
-            return DeviceListUpdateResult.NoComponent;
-
-        var list = devices.ToList();
-        var newDevices = new HashSet<EntityUid>(list);
-
-        if (merge)
-            newDevices.UnionWith(deviceList.Devices);
-
-        if (newDevices.Count > deviceList.DeviceLimit)
+        /// <summary>
+        ///     Updates the device list stored on this entity.
+        /// </summary>
+        /// <param name="uid">The entity to update.</param>
+        /// <param name="devices">The devices to store.</param>
+        /// <param name="merge">Whether to merge or replace the devices stored.</param>
+        /// <param name="deviceList">Device list component</param>
+        public DeviceListUpdateResult UpdateDeviceList(EntityUid uid, IEnumerable<EntityUid> devices, bool merge = false, DeviceListComponent? deviceList = null)
         {
-            return DeviceListUpdateResult.TooManyDevices;
+            if (!Resolve(uid, ref deviceList))
+                return DeviceListUpdateResult.NoComponent;
+
+            var list = devices.ToList();
+            var newDevices = new HashSet<EntityUid>(list);
+
+            if (merge)
+                newDevices.UnionWith(deviceList.Devices);
+
+            if (newDevices.Count > deviceList.DeviceLimit)
+            {
+                return DeviceListUpdateResult.TooManyDevices;
+            }
+
+            var query = GetEntityQuery<DeviceNetworkComponent>();
+            var oldDevices = deviceList.Devices.ToList();
+            foreach (var device in oldDevices)
+            {
+                if (newDevices.Contains(device))
+                    continue;
+
+                deviceList.Devices.Remove(device);
+                if (query.TryGetComponent(device, out var comp))
+                    comp.DeviceLists.Remove(uid);
+            }
+
+            foreach (var device in newDevices)
+            {
+                if (!query.TryGetComponent(device, out var comp))
+                    continue;
+
+                if (!deviceList.Devices.Add(device))
+                    continue;
+
+                comp.DeviceLists.Add(uid);
+            }
+
+            RaiseLocalEvent(uid, new DeviceListUpdateEvent(oldDevices, list));
+
+            Dirty(uid, deviceList);
+
+            return DeviceListUpdateResult.UpdateOk;
         }
-
-        var query = GetEntityQuery<DeviceNetworkComponent>();
-        var oldDevices = deviceList.Devices.ToList();
-        foreach (var device in oldDevices)
-        {
-            if (newDevices.Contains(device))
-                continue;
-
-            deviceList.Devices.Remove(device);
-            if (query.TryGetComponent(device, out var comp))
-                comp.DeviceLists.Remove(uid);
-        }
-
-        foreach (var device in newDevices)
-        {
-            if (!query.TryGetComponent(device, out var comp))
-                continue;
-
-            if (!deviceList.Devices.Add(device))
-                continue;
-
-            comp.DeviceLists.Add(uid);
-        }
-
-        RaiseLocalEvent(uid, new DeviceListUpdateEvent(oldDevices, list));
-
-        Dirty(uid, deviceList);
-
-        return DeviceListUpdateResult.UpdateOk;
     }
 }
