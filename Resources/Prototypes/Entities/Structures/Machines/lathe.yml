@@ -173,6 +173,12 @@
       - ClothingOuterHardsuitEVA # Frontier
   - type: EmagLatheRecipes
     emagStaticRecipes:
+      - MagazineVector22 #CorvaxFrontier
+      - MagazineVector22Empty #CorvaxFrontier
+      - MagazineVector45 #CorvaxFrontier
+      - MagazineVector45Empty #CorvaxFrontier
+      - MagazineBoxVector45 #CorvaxFrontier
+      - MagazineBoxVector22 #CorvaxFrontier
       - BoxLethalshot
       - BoxShotgunFlare
       - MagazineBoxLightRifle
@@ -199,6 +205,14 @@
       - GrenadeBlast
       - GrenadeEMP
       - GrenadeFlash
+      - MagazineBoxVector22Incendiary #CorvaxFrontier
+      - MagazineBoxVector22Uranium #CorvaxFrontier
+      - MagazineVector22Incendiary #CorvaxFrontier
+      - MagazineVector22Uranium #CorvaxFrontier
+      - MagazineBoxVector45Incendiary #CorvaxFrontier
+      - MagazineBoxVector45Uranium #CorvaxFrontier
+      - MagazineVector45Incendiary #CorvaxFrontier
+      - MagazineVector45Uranium #CorvaxFrontier
       - MagazineBoxLightRifleIncendiary
       - MagazineBoxLightRifleUranium
       - MagazineBoxMagnumIncendiary
@@ -858,6 +872,14 @@
     idleState: icon
     runningState: icon
     staticRecipes:
+      #CorvaxFrontier Start
+      - MagazineBoxVector45
+      - MagazineBoxVector22
+      - MagazineVector45
+      - MagazineVector45Empty
+      - MagazineVector22
+      - MagazineVector22Empty
+      #CorvaxFrontier End
       - BoxLethalshot
       - BoxShotgunFlare
       - BoxShotgunPractice
@@ -905,6 +927,20 @@
       - WeaponLaserCarbinePractice
       - Zipties
     dynamicRecipes:
+      #CorvaxFrontier Start
+      - MagazineBoxVector22Practice
+      - MagazineBoxVector22Incendiary
+      - MagazineBoxVector22Uranium
+      - MagazineVector22Practice
+      - MagazineVector22Incendiary
+      - MagazineVector22Uranium
+      - MagazineBoxVector45Practice
+      - MagazineBoxVector45Incendiary
+      - MagazineBoxVector45Uranium
+      - MagazineVector45Practice
+      - MagazineVector45Incendiary
+      - MagazineVector45Uranium
+      #CorvaxFrontier End
       - BoxBeanbag
       - BoxShotgunIncendiary
       - BoxShotgunUranium
@@ -990,6 +1026,12 @@
       idleState: icon
       runningState: icon
       staticRecipes:
+        - MagazineVector22
+        - MagazineVector22Empty
+        - MagazineVector45
+        - MagazineVector45Empty
+        - MagazineBoxVector45
+        - MagazineBoxVector22
         - BoxLethalshot
         - BoxShotgunFlare
         - BoxShotgunSlug
