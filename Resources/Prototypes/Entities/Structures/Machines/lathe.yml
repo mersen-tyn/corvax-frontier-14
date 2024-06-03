@@ -198,6 +198,8 @@
       - ShellTranquilizer
       - SpeedLoaderMagnum
       - SpeedLoaderMagnumEmpty
+      - SpeedLoaderRifleHeavy # Frontier
+      - SpeedLoaderRifleHeavyEmpty # Frontier
     emagDynamicRecipes:
       - BoxBeanbag
       - BoxShotgunIncendiary
@@ -236,6 +238,8 @@
       - PowerCageSmall
       - SpeedLoaderMagnumIncendiary
       - SpeedLoaderMagnumUranium
+      - SpeedLoaderRifleHeavyIncendiary # Frontier
+      - SpeedLoaderRifleHeavyUranium # Frontier
 
 - type: entity
   id: AutolatheHyperConvection
@@ -522,6 +526,7 @@
       - ClothingShoesBootsJetBoots # Corvax-Frontier
       - WeaponMagmiteCrusher # Corvax-Frontier
       - WeaponMagmiteCrusherGlaive # Corvax-Frontier
+      - WeaponMagmitePlasmaCutter # Corvax-Frontier
   - type: EmagLatheRecipes
     emagDynamicRecipes:
       - ExplosivePayload
@@ -912,6 +917,8 @@
       - RiotShield
       - SpeedLoaderMagnum
       - SpeedLoaderMagnumEmpty
+      - SpeedLoaderRifleHeavy # Frontier
+      - SpeedLoaderRifleHeavyEmpty # Frontier
       - Stunbaton
       - TargetClown
       - TargetHuman
@@ -984,6 +991,8 @@
       - SignalTrigger
       - SpeedLoaderMagnumIncendiary
       - SpeedLoaderMagnumUranium
+      - SpeedLoaderRifleHeavyIncendiary # Frontier
+      - SpeedLoaderRifleHeavyUranium # Frontier
       - TelescopicShield
       - TimerTrigger
       - Truncheon
@@ -1051,6 +1060,8 @@
         - ShellTranquilizer
         - SpeedLoaderMagnum
         - SpeedLoaderMagnumEmpty
+        - SpeedLoaderRifleHeavy # Frontier
+        - SpeedLoaderRifleHeavyEmpty # Frontier
     - type: MaterialStorage
       whitelist:
         tags:
